@@ -1,0 +1,27 @@
+h1:hover {
+  color: blue;
+  font-size: x-large;
+  text-decoration: none;
+}
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+a {
+  text-decoration: none;
+  color: black;
+}
+button {
+  border-radius: 40px;
+  background-color: tomato;
+  padding: 10px;
+}
+html {
+  scroll-behavior: smooth; /* This is the magic line for smooth scrolling */
+}
+/* Optional: Added to fix content hiding behind fixed header */
+section:not(.hero-background) {
+  padding-top: 100px; /* Space for the fixed header */
+  margin-top: -100px; /* Pulls the section up so the scroll point is correct */
+}

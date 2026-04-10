@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirai OS - Web Concept</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right top, #283048, #2e3852, #34405d, #3b4968, #425173); /* Sirai OS background */
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #taskbar {
+            width: 100%;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .taskbar-item {
+            padding: 5px 10px;
+            margin-right: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .taskbar-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #desktop {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 15px;
+        }
+
+        .icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            color: #fff;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        .icon:hover {
+            transform: translateY(-3px);
+        }
+
+        .icon img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+        }
+
+        .window {
+            position: absolute;
+            background-color: rgba(40, 48, 72, 0.95); /* Window background */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            min-width: 300px;
+            min-height: 200px;
+            resize: both;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* Hidden by default */
+        }
+
+        .window-header {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .window-header .close-button {
+            background-color: #ff5f56;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .window-header .close-button:hover {
+            background-color: #ff3b30;
+        }
+
+        .window-content {
+            padding: 15px;
+            flex-grow: 1;
+            color: #ccc;
+        }
+
+        #terminal-content {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            padding: 10px;
+            height: calc(100% - 20px);
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        #terminal-input {
+            width: calc(100% - 20px);
+            background-color: #2a2a2a;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin-top: 10px;
+            border-radius: 3px;
+        }
+        #files-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        #files-content li {
+            padding: 5px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        #files-content li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        #files-content li::before {
+            content: '📄 '; /* File icon */
+            margin-right: 8px;
+        }
+        #files-content .folder::before {
+            content: '📁 '; /* Folder icon */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="desktop">
+        <div class="icon" id="terminal-icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888806.svg" alt="Terminal">
+            <span>Terminal</span>
+        </div>
+        <div class="icon" id="files-icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888796.svg" alt="Files">
+            <span>Files</span>
+        </div>
+        <div class="icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888800.svg" alt="Browser">
+            <span>Browser</span>
+        </div>
+        <div class="icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888794.svg" alt="Settings">
+            <span>Settings</span>
+        </div>
+    </div>
+
+    <div id="taskbar">
+        <div class="taskbar-item">Sirai OS</div>
+        <div class="taskbar-item" id="taskbar-terminal">Terminal</div>
+        <div class="taskbar-item" id="taskbar-files">Files</div>
+        <div style="margin-left: auto; padding-right: 10px; font-size: 0.9em;" id="time-display"></div>
+    </div>
+
+    <div id="terminal-window" class="window">
+        <div class="window-header">
+            <span>Terminal - Sirai OS</span>
+            <span class="close-button" onclick="document.getElementById('terminal-window').style.display='none';"></span>
+        </div>
+        <div class="window-content">
+            <div id="terminal-content">Welcome to Sirai OS Terminal! Type 'help' for commands.<br>>> </div>
+            <input type="text" id="terminal-input" placeholder="Type command...">
+        </div>
+    </div>
+
+    <div id="files-window" class="window">
+        <div class="window-header">
+            <span>Files - Sirai OS</span>
+            <span class="close-button" onclick="document.getElementById('files-window').style.display='none';"></span>
+        </div>
+        <div class="window-content">
+            <div id="files-content">
+                <ul>
+                    <li class="folder">Documents</li>
+                    <li class="folder">Pictures</li>
+                    <li>MyReport.docx</li>
+                    <li>Sirai_OS_ReadMe.txt</li>
+                    <li>boot.log</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Desktop Icons ---
+        document.getElementById('terminal-icon').addEventListener('click', function() {
+            document.getElementById('terminal-window').style.display = 'flex';
+            document.getElementById('terminal-window').style.zIndex = 101; // Bring to front
+            document.getElementById('terminal-input').focus();
+        });
+
+        document.getElementById('files-icon').addEventListener('click', function() {
+            document.getElementById('files-window').style.display = 'flex';
+            document.getElementById('files-window').style.zIndex = 101; // Bring to front
+        });
+
+        // --- Taskbar Items (to open windows) ---
+        document.getElementById('taskbar-terminal').addEventListener('click', function() {
+            document.getElementById('terminal-window').style.display = 'flex';
+            document.getElementById('terminal-window').style.zIndex = 101;
+            document.getElementById('terminal-input').focus();
+        });
+
+        document.getElementById('taskbar-files').addEventListener('click', function() {
+            document.getElementById('files-window').style.display = 'flex';
+            document.getElementById('files-window').style.zIndex = 101;
+        });
+
+        // --- Window Dragging Functionality ---
+        document.querySelectorAll('.window-header').forEach(header => {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            let windowElement = header.parentElement;
+
+            header.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+                windowElement.style.zIndex = 102; // Bring dragged window to front
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // Set the element's new position:
+                let newTop = windowElement.offsetTop - pos2;
+                let newLeft = windowElement.offsetLeft - pos1;
+
+                // Keep window within viewport
+                newTop = Math.max(0, Math.min(newTop, window.innerHeight - windowElement.offsetHeight));
+                newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - windowElement.offsetWidth));
+
+                windowElement.style.top = newTop + "px";
+                windowElement.style.left = newLeft + "px";
+                windowElement.style.transform = 'none'; // Disable translate for manual positioning
+            }
+
+            function closeDragElement() {
+                /* Stop moving when mouse button is released:*/
+                document.onmouseup = null;
+                document.onmousemove = null;
+                // Reset Z-index after drag ends (optional, or manage it with active window)
+                windowElement.style.zIndex = 101;
+            }
+        });
+
+        // --- Terminal Logic (very basic simulation) ---
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalContent = document.getElementById('terminal-content');
+
+        terminalInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                let command = terminalInput.value.trim();
+                terminalContent.innerHTML += `> ${command}<br>`;
+                terminalInput.value = '';
+
+                switch (command.toLowerCase()) {
+                    case 'help':
+                        terminalContent.innerHTML += `  Available commands:<br>  - help: Show this help message<br>  - echo [text]: Display text<br>  - clear: Clear the terminal<br>  - date: Show current date and time<br>`;
+                        break;
+                    case 'clear':
+                        terminalContent.innerHTML = 'Welcome to Sirai OS Terminal! Type \'help\' for commands.<br>';
+                        break;
+                    case 'date':
+                        terminalContent.innerHTML += `  ${new Date().toLocaleString()}<br>`;
+                        break;
+                    default:
+                        if (command.toLowerCase().startsWith('echo ')) {
+                            terminalContent.innerHTML += `  ${command.substring(5)}<br>`;
+                        } else {
+                            terminalContent.innerHTML += `  Command not found: ${command}<br>`;
+                        }
+                        break;
+                }
+                terminalContent.scrollTop = terminalContent.scrollHeight; // Scroll to bottom
+                terminalContent.innerHTML += `> `; // New prompt
+            }
+        });
+
+        // --- Clock in Taskbar ---
+        function updateTime() {
+            const now = new Date();
+            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const timeString = now.toLocaleTimeString('en-US', options);
+            const dateString = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            document.getElementById('time-display').textContent = `${dateString} ${timeString}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime(); // Initial call
+    </script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirai OS - Web Concept</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right top, #283048, #2e3852, #34405d, #3b4968, #425173); /* Sirai OS background */
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #taskbar {
+            width: 100%;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .taskbar-item {
+            padding: 5px 10px;
+            margin-right: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .taskbar-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #desktop {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 15px;
+        }
+
+        .icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            color: #fff;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        .icon:hover {
+            transform: translateY(-3px);
+        }
+
+        .icon img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+        }
+
+        .window {
+            position: absolute;
+            background-color: rgba(40, 48, 72, 0.95); /* Window background */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            min-width: 300px;
+            min-height: 200px;
+            resize: both;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* Hidden by default */
+        }
+
+        .window-header {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .window-header .close-button {
+            background-color: #ff5f56;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .window-header .close-button:hover {
+            background-color: #ff3b30;
+        }
+
+        .window-content {
+            padding: 15px;
+            flex-grow: 1;
+            color: #ccc;
+        }
+
+        #terminal-content {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            padding: 10px;
+            height: calc(100% - 20px);
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        #terminal-input {
+            width: calc(100% - 20px);
+            background-color: #2a2a2a;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin-top: 10px;
+            border-radius: 3px;
+        }
+        #files-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        #files-content li {
+            padding: 5px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        #files-content li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        #files-content li::before {
+            content: '📄 '; /* File icon */
+            margin-right: 8px;
+        }
+        #files-content .folder::before {
+            content: '📁 '; /* Folder icon */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="desktop">
+        <div class="icon" id="terminal-icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888806.svg" alt="Terminal">
+            <span>Terminal</span>
+        </div>
+        <div class="icon" id="files-icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888796.svg" alt="Files">
+            <span>Files</span>
+        </div>
+        <div class="icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888800.svg" alt="Browser">
+            <span>Browser</span>
+        </div>
+        <div class="icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888794.svg" alt="Settings">
+            <span>Settings</span>
+        </div>
+    </div>
+
+    <div id="taskbar">
+        <div class="taskbar-item">Sirai OS</div>
+        <div class="taskbar-item" id="taskbar-terminal">Terminal</div>
+        <div class="taskbar-item" id="taskbar-files">Files</div>
+        <div style="margin-left: auto; padding-right: 10px; font-size: 0.9em;" id="time-display"></div>
+    </div>
+
+    <div id="terminal-window" class="window">
+        <div class="window-header">
+            <span>Terminal - Sirai OS</span>
+            <span class="close-button" onclick="document.getElementById('terminal-window').style.display='none';"></span>
+        </div>
+        <div class="window-content">
+            <div id="terminal-content">Welcome to Sirai OS Terminal! Type 'help' for commands.<br>>> </div>
+            <input type="text" id="terminal-input" placeholder="Type command...">
+        </div>
+    </div>
+
+    <div id="files-window" class="window">
+        <div class="window-header">
+            <span>Files - Sirai OS</span>
+            <span class="close-button" onclick="document.getElementById('files-window').style.display='none';"></span>
+        </div>
+        <div class="window-content">
+            <div id="files-content">
+                <ul>
+                    <li class="folder">Documents</li>
+                    <li class="folder">Pictures</li>
+                    <li>MyReport.docx</li>
+                    <li>Sirai_OS_ReadMe.txt</li>
+                    <li>boot.log</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Desktop Icons ---
+        document.getElementById('terminal-icon').addEventListener('click', function() {
+            document.getElementById('terminal-window').style.display = 'flex';
+            document.getElementById('terminal-window').style.zIndex = 101; // Bring to front
+            document.getElementById('terminal-input').focus();
+        });
+
+        document.getElementById('files-icon').addEventListener('click', function() {
+            document.getElementById('files-window').style.display = 'flex';
+            document.getElementById('files-window').style.zIndex = 101; // Bring to front
+        });
+
+        // --- Taskbar Items (to open windows) ---
+        document.getElementById('taskbar-terminal').addEventListener('click', function() {
+            document.getElementById('terminal-window').style.display = 'flex';
+            document.getElementById('terminal-window').style.zIndex = 101;
+            document.getElementById('terminal-input').focus();
+        });
+
+        document.getElementById('taskbar-files').addEventListener('click', function() {
+            document.getElementById('files-window').style.display = 'flex';
+            document.getElementById('files-window').style.zIndex = 101;
+        });
+
+        // --- Window Dragging Functionality ---
+        document.querySelectorAll('.window-header').forEach(header => {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            let windowElement = header.parentElement;
+
+            header.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+                windowElement.style.zIndex = 102; // Bring dragged window to front
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // Set the element's new position:
+                let newTop = windowElement.offsetTop - pos2;
+                let newLeft = windowElement.offsetLeft - pos1;
+
+                // Keep window within viewport
+                newTop = Math.max(0, Math.min(newTop, window.innerHeight - windowElement.offsetHeight));
+                newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - windowElement.offsetWidth));
+
+                windowElement.style.top = newTop + "px";
+                windowElement.style.left = newLeft + "px";
+                windowElement.style.transform = 'none'; // Disable translate for manual positioning
+            }
+
+            function closeDragElement() {
+                /* Stop moving when mouse button is released:*/
+                document.onmouseup = null;
+                document.onmousemove = null;
+                // Reset Z-index after drag ends (optional, or manage it with active window)
+                windowElement.style.zIndex = 101;
+            }
+        });
+
+        // --- Terminal Logic (very basic simulation) ---
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalContent = document.getElementById('terminal-content');
+
+        terminalInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                let command = terminalInput.value.trim();
+                terminalContent.innerHTML += `> ${command}<br>`;
+                terminalInput.value = '';
+
+                switch (command.toLowerCase()) {
+                    case 'help':
+                        terminalContent.innerHTML += `  Available commands:<br>  - help: Show this help message<br>  - echo [text]: Display text<br>  - clear: Clear the terminal<br>  - date: Show current date and time<br>`;
+                        break;
+                    case 'clear':
+                        terminalContent.innerHTML = 'Welcome to Sirai OS Terminal! Type \'help\' for commands.<br>';
+                        break;
+                    case 'date':
+                        terminalContent.innerHTML += `  ${new Date().toLocaleString()}<br>`;
+                        break;
+                    default:
+                        if (command.toLowerCase().startsWith('echo ')) {
+                            terminalContent.innerHTML += `  ${command.substring(5)}<br>`;
+                        } else {
+                            terminalContent.innerHTML += `  Command not found: ${command}<br>`;
+                        }
+                        break;
+                }
+                terminalContent.scrollTop = terminalContent.scrollHeight; // Scroll to bottom
+                terminalContent.innerHTML += `> `; // New prompt
+            }
+        });
+
+        // --- Clock in Taskbar ---
+        function updateTime() {
+            const now = new Date();
+            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const timeString = now.toLocaleTimeString('en-US', options);
+            const dateString = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            document.getElementById('time-display').textContent = `${dateString} ${timeString}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime(); // Initial call
+    </script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirai OS - Web Concept</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right top, #283048, #2e3852, #34405d, #3b4968, #425173); /* Sirai OS background */
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #taskbar {
+            width: 100%;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .taskbar-item {
+            padding: 5px 10px;
+            margin-right: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .taskbar-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #desktop {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 15px;
+        }
+
+        .icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            color: #fff;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        .icon:hover {
+            transform: translateY(-3px);
+        }
+
+        .icon img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+        }
+
+        .window {
+            position: absolute;
+            background-color: rgba(40, 48, 72, 0.95); /* Window background */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            min-width: 300px;
+            min-height: 200px;
+            resize: both;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* Hidden by default */
+        }
+
+        .window-header {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .window-header .close-button {
+            background-color: #ff5f56;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .window-header .close-button:hover {
+            background-color: #ff3b30;
+        }
+
+        .window-content {
+            padding: 15px;
+            flex-grow: 1;
+            color: #ccc;
+        }
+
+        #terminal-content {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            padding: 10px;
+            height: calc(100% - 20px);
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        #terminal-input {
+            width: calc(100% - 20px);
+            background-color: #2a2a2a;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin-top: 10px;
+            border-radius: 3px;
+        }
+        #files-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        #files-content li {
+            padding: 5px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        #files-content li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        #files-content li::before {
+            content: '📄 '; /* File icon */
+            margin-right: 8px;
+        }
+        #files-content .folder::before {
+            content: '📁 '; /* Folder icon */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="desktop">
+        <div class="icon" id="terminal-icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888806.svg" alt="Terminal">
+            <span>Terminal</span>
+        </div>
+        <div class="icon" id="files-icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888796.svg" alt="Files">
+            <span>Files</span>
+        </div>
+        <div class="icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888800.svg" alt="Browser">
+            <span>Browser</span>
+        </div>
+        <div class="icon">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/888/888794.svg" alt="Settings">
+            <span>Settings</span>
+        </div>
+    </div>
+
+    <div id="taskbar">
+        <div class="taskbar-item">Sirai OS</div>
+        <div class="taskbar-item" id="taskbar-terminal">Terminal</div>
+        <div class="taskbar-item" id="taskbar-files">Files</div>
+        <div style="margin-left: auto; padding-right: 10px; font-size: 0.9em;" id="time-display"></div>
+    </div>
+
+    <div id="terminal-window" class="window">
+        <div class="window-header">
+            <span>Terminal - Sirai OS</span>
+            <span class="close-button" onclick="document.getElementById('terminal-window').style.display='none';"></span>
+        </div>
+        <div class="window-content">
+            <div id="terminal-content">Welcome to Sirai OS Terminal! Type 'help' for commands.<br>>> </div>
+            <input type="text" id="terminal-input" placeholder="Type command...">
+        </div>
+    </div>
+
+    <div id="files-window" class="window">
+        <div class="window-header">
+            <span>Files - Sirai OS</span>
+            <span class="close-button" onclick="document.getElementById('files-window').style.display='none';"></span>
+        </div>
+        <div class="window-content">
+            <div id="files-content">
+                <ul>
+                    <li class="folder">Documents</li>
+                    <li class="folder">Pictures</li>
+                    <li>MyReport.docx</li>
+                    <li>Sirai_OS_ReadMe.txt</li>
+                    <li>boot.log</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Desktop Icons ---
+        document.getElementById('terminal-icon').addEventListener('click', function() {
+            document.getElementById('terminal-window').style.display = 'flex';
+            document.getElementById('terminal-window').style.zIndex = 101; // Bring to front
+            document.getElementById('terminal-input').focus();
+        });
+
+        document.getElementById('files-icon').addEventListener('click', function() {
+            document.getElementById('files-window').style.display = 'flex';
+            document.getElementById('files-window').style.zIndex = 101; // Bring to front
+        });
+
+        // --- Taskbar Items (to open windows) ---
+        document.getElementById('taskbar-terminal').addEventListener('click', function() {
+            document.getElementById('terminal-window').style.display = 'flex';
+            document.getElementById('terminal-window').style.zIndex = 101;
+            document.getElementById('terminal-input').focus();
+        });
+
+        document.getElementById('taskbar-files').addEventListener('click', function() {
+            document.getElementById('files-window').style.display = 'flex';
+            document.getElementById('files-window').style.zIndex = 101;
+        });
+
+        // --- Window Dragging Functionality ---
+        document.querySelectorAll('.window-header').forEach(header => {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            let windowElement = header.parentElement;
+
+            header.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+                windowElement.style.zIndex = 102; // Bring dragged window to front
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // Set the element's new position:
+                let newTop = windowElement.offsetTop - pos2;
+                let newLeft = windowElement.offsetLeft - pos1;
+
+                // Keep window within viewport
+                newTop = Math.max(0, Math.min(newTop, window.innerHeight - windowElement.offsetHeight));
+                newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - windowElement.offsetWidth));
+
+                windowElement.style.top = newTop + "px";
+                windowElement.style.left = newLeft + "px";
+                windowElement.style.transform = 'none'; // Disable translate for manual positioning
+            }
+
+            function closeDragElement() {
+                /* Stop moving when mouse button is released:*/
+                document.onmouseup = null;
+                document.onmousemove = null;
+                // Reset Z-index after drag ends (optional, or manage it with active window)
+                windowElement.style.zIndex = 101;
+            }
+        });
+
+        // --- Terminal Logic (very basic simulation) ---
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalContent = document.getElementById('terminal-content');
+
+        terminalInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                let command = terminalInput.value.trim();
+                terminalContent.innerHTML += `> ${command}<br>`;
+                terminalInput.value = '';
+
+                switch (command.toLowerCase()) {
+                    case 'help':
+                        terminalContent.innerHTML += `  Available commands:<br>  - help: Show this help message<br>  - echo [text]: Display text<br>  - clear: Clear the terminal<br>  - date: Show current date and time<br>`;
+                        break;
+                    case 'clear':
+                        terminalContent.innerHTML = 'Welcome to Sirai OS Terminal! Type \'help\' for commands.<br>';
+                        break;
+                    case 'date':
+                        terminalContent.innerHTML += `  ${new Date().toLocaleString()}<br>`;
+                        break;
+                    default:
+                        if (command.toLowerCase().startsWith('echo ')) {
+                            terminalContent.innerHTML += `  ${command.substring(5)}<br>`;
+                        } else {
+                            terminalContent.innerHTML += `  Command not found: ${command}<br>`;
+                        }
+                        break;
+                }
+                terminalContent.scrollTop = terminalContent.scrollHeight; // Scroll to bottom
+                terminalContent.innerHTML += `> `; // New prompt
+            }
+        });
+
+        // --- Clock in Taskbar ---
+        function updateTime() {
+            const now = new Date();
+            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const timeString = now.toLocaleTimeString('en-US', options);
+            const dateString = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            document.getElementById('time-display').textContent = `${dateString} ${timeString}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime(); // Initial call
+    </script>
+
+</body>
+</html>
